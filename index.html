@@ -391,6 +391,14 @@
             submitButton.disabled = true;
             submitButton.classList.add('opacity-50');
             
+            // Add a safety timeout to reset button after 10 seconds
+            const safetyTimeout = setTimeout(() => {
+                submitButton.innerHTML = originalText;
+                submitButton.disabled = false;
+                submitButton.classList.remove('opacity-50');
+                console.log('Button reset by safety timeout');
+            }, 10000);
+            
             try {
                 // Create question ID
                 const questionId = Date.now();
@@ -453,6 +461,14 @@
                 document.getElementById('question-title').value = '';
                 document.getElementById('question-detail').value = '';
                 
+                // Clear safety timeout
+                clearTimeout(safetyTimeout);
+                
+                // Reset button state BEFORE closing modal
+                submitButton.innerHTML = originalText;
+                submitButton.disabled = false;
+                submitButton.classList.remove('opacity-50');
+                
                 // Close modal
                 closeModal();
                 
@@ -488,6 +504,14 @@
             } catch (error) {
                 console.error('Error submitting question:', error);
                 
+                // Clear safety timeout
+                clearTimeout(safetyTimeout);
+                
+                // Reset button state on error
+                submitButton.innerHTML = originalText;
+                submitButton.disabled = false;
+                submitButton.classList.remove('opacity-50');
+                
                 // Show error notification
                 const errorNotification = document.createElement('div');
                 errorNotification.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300';
@@ -513,11 +537,6 @@
                         document.body.removeChild(errorNotification);
                     }, 300);
                 }, 3000);
-            } finally {
-                // Always reset button state
-                submitButton.innerHTML = originalText;
-                submitButton.disabled = false;
-                submitButton.classList.remove('opacity-50');
             }
         };
 
