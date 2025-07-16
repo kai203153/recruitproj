@@ -12,7 +12,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getFirestore, collection, addDoc, getDocs, onSnapshot, orderBy, query, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getDatabase, ref, push, onValue, set, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
         import { getAuth, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         
         // Firebase configuration
@@ -28,7 +28,7 @@
         
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        const db = getDatabase(app);
         const auth = getAuth(app);
         const googleProvider = new GoogleAuthProvider();
         
@@ -36,12 +36,10 @@
         window.db = db;
         window.auth = auth;
         window.googleProvider = googleProvider;
-        window.addDoc = addDoc;
-        window.collection = collection;
-        window.getDocs = getDocs;
-        window.onSnapshot = onSnapshot;
-        window.orderBy = orderBy;
-        window.query = query;
+        window.ref = ref;
+        window.push = push;
+        window.onValue = onValue;
+        window.set = set;
         window.serverTimestamp = serverTimestamp;
         window.signInWithPopup = signInWithPopup;
         window.signInWithEmailAndPassword = signInWithEmailAndPassword;
@@ -493,8 +491,9 @@
                 </form>
             `;
             
-            // Add form submit event listener
+            // Add form submit event listener (remove existing first to prevent duplicates)
             const form = document.getElementById('new-question-form');
+            form.removeEventListener('submit', submitNewQuestion); // Remove existing listener
             form.addEventListener('submit', submitNewQuestion);
             
             // Clear any existing form data
@@ -513,9 +512,19 @@
             }, 10);
         }
 
+        // Flag to prevent duplicate submissions
+        let isSubmitting = false;
+        
         // Submit new question
         const submitNewQuestion = async (e) => {
             e.preventDefault();
+            
+            // Prevent duplicate submissions
+            if (isSubmitting) {
+                console.log('Already submitting, ignoring duplicate request');
+                return;
+            }
+            isSubmitting = true;
             
             const title = document.getElementById('question-title').value.trim();
             const detail = document.getElementById('question-detail').value.trim();
@@ -570,19 +579,19 @@
                     needsRA: false
                 };
                 
-                // Save to Firestore if available
+                // Save to Database if available
                 if (window.db) {
                     try {
-                        const savedId = await saveQuestionToFirestore(newQuestion);
+                        const savedId = await saveQuestionToDatabase(newQuestion);
                         if (savedId) {
-                            newQuestion.id = savedId; // Use Firestore ID
+                            newQuestion.id = savedId; // Use Database ID
                             newQuestion.userId = currentUser?.uid || null; // Add user ID
-                            console.log('Question saved to Firestore with ID:', savedId);
+                            console.log('Question saved to Database with ID:', savedId);
                         } else {
-                            console.error('Failed to save question to Firestore');
+                            console.error('Failed to save question to Database');
                         }
                     } catch (error) {
-                        console.error('Error saving to Firestore:', error);
+                        console.error('Error saving to Database:', error);
                     }
                 }
                 
@@ -660,6 +669,9 @@
                     loadMyQuestions();
                 }
                 
+                // Reset submission flag
+                isSubmitting = false;
+                
             } catch (error) {
                 console.error('Error submitting question:', error);
                 
@@ -696,6 +708,9 @@
                         document.body.removeChild(errorNotification);
                     }, 300);
                 }, 3000);
+                
+                // Reset submission flag
+                isSubmitting = false;
             }
         };
 
@@ -1192,7 +1207,7 @@
             const myQuestions = knowledgeBase.filter(q => q.userId === currentUser.uid);
             console.log('My questions:', myQuestions); // Debug log
             console.log('Current user ID:', currentUser.uid); // Debug log
-            console.log('All questions:', knowledgeBase.map(q => ({ id: q.id, userId: q.userId }))); // Debug log
+            console.log('All questions:', knowledgeBase.map(q => ({ id: q.id, userId: q.userId, question: q.question.substring(0, 50) }))); // Debug log
             
             if (myQuestions.length === 0) {
                 myQuestionsList.innerHTML = `
@@ -1258,45 +1273,54 @@
         
         // --- Firebase Functions ---
         
-        // Load questions from Firestore
-        const loadQuestionsFromFirestore = async () => {
+        // Load questions from Realtime Database
+        const loadQuestionsFromDatabase = async () => {
             try {
-                console.log('Attempting to load questions from Firestore...');
-                const q = query(collection(db, "questions"), orderBy("timestamp", "desc"));
+                console.log('Attempting to load questions from Realtime Database...');
+                const questionsRef = ref(db, "questions");
                 
                 // Set up real-time listener
-                onSnapshot(q, (querySnapshot) => {
-                    console.log('Firestore snapshot received:', querySnapshot.size, 'documents');
-                    const firestoreQuestions = [];
+                onValue(questionsRef, (snapshot) => {
+                    console.log('Database snapshot received');
+                    const databaseQuestions = [];
                     
-                    querySnapshot.forEach((doc) => {
-                        const data = doc.data();
-                        console.log('Document data:', doc.id, data);
-                        firestoreQuestions.push({
-                            id: doc.id,
-                            questioner: data.questioner || { age: "匿名", industry: "匿名", job: "匿名" },
-                            question: data.question,
-                            answer: data.answer,
-                            tags: data.tags || [],
-                            views: data.views || 0,
-                            likes: data.likes || 0,
-                            hasAIResponse: data.hasAIResponse || false,
-                            needsRA: data.needsRA || false,
-                            userId: data.userId || null,
-                            timestamp: data.timestamp
+                    if (snapshot.exists()) {
+                        const data = snapshot.val();
+                        Object.keys(data).forEach((key) => {
+                            const questionData = data[key];
+                            console.log('Question data:', key, questionData);
+                            databaseQuestions.push({
+                                id: key,
+                                questioner: questionData.questioner || { age: "匿名", industry: "匿名", job: "匿名" },
+                                question: questionData.question,
+                                answer: questionData.answer,
+                                tags: questionData.tags || [],
+                                views: questionData.views || 0,
+                                likes: questionData.likes || 0,
+                                hasAIResponse: questionData.hasAIResponse || false,
+                                needsRA: questionData.needsRA || false,
+                                userId: questionData.userId || null,
+                                timestamp: questionData.timestamp
+                            });
                         });
+                    }
+                    
+                    // Sort by timestamp (newest first)
+                    databaseQuestions.sort((a, b) => {
+                        const timeA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+                        const timeB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+                        return timeB - timeA;
                     });
                     
-                    // Update knowledgeBase with Firestore data
-                    knowledgeBase.length = 0; // Clear existing data
-                    knowledgeBase.push(...firestoreQuestions, ...knowledgeBase.filter(q => !q.userId)); // Add Firestore data + static data
+                    // Get static questions (sample Q&A)
+                    const staticQuestions = knowledgeBase.filter(q => !q.userId);
                     
-                    // Combine with static knowledge base
-                    const allQuestions = [...firestoreQuestions, ...knowledgeBase];
+                    // Combine database data with static data
+                    const allQuestions = [...databaseQuestions, ...staticQuestions];
                     renderFeed(allQuestions);
-                    console.log('Real-time update: Loaded questions from Firestore:', firestoreQuestions.length);
+                    console.log('Real-time update: Loaded questions from Database:', databaseQuestions.length);
                 }, (error) => {
-                    console.error("Firestore listener error: ", error);
+                    console.error("Database listener error: ", error);
                     renderFeed(knowledgeBase);
                 });
                 
@@ -1306,11 +1330,14 @@
             }
         };
         
-        // Save new question to Firestore
-        const saveQuestionToFirestore = async (questionData) => {
+        // Save new question to Realtime Database
+        const saveQuestionToDatabase = async (questionData) => {
             try {
-                console.log('Attempting to save question to Firestore:', questionData);
-                const docRef = await addDoc(collection(db, "questions"), {
+                console.log('Attempting to save question to Database:', questionData);
+                const questionsRef = ref(db, "questions");
+                const newQuestionRef = push(questionsRef);
+                
+                await set(newQuestionRef, {
                     questioner: questionData.questioner,
                     question: questionData.question,
                     answer: questionData.answer,
@@ -1322,8 +1349,9 @@
                     userId: currentUser?.uid || null,
                     timestamp: serverTimestamp()
                 });
-                console.log("Question saved with ID: ", docRef.id);
-                return docRef.id;
+                
+                console.log("Question saved with ID: ", newQuestionRef.key);
+                return newQuestionRef.key;
             } catch (error) {
                 console.error("Error saving question: ", error);
                 console.error("Error details:", error.message, error.code);
@@ -1342,7 +1370,7 @@
             
             if (window.db) {
                 console.log('Firebase initialized, loading questions...');
-                loadQuestionsFromFirestore();
+                loadQuestionsFromDatabase();
             } else {
                 console.log('Firebase not available, using static data...');
                 renderFeed(knowledgeBase);
