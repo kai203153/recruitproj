@@ -12,7 +12,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getDatabase, ref, push, onValue, set, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        import { getDatabase, ref, push, onValue, set, serverTimestamp, child, update } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
         import { getAuth, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         
         // Firebase configuration
@@ -461,7 +461,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
                             </div>
                         </div>
-                        <p class="font-bold text-lg text-gray-800">キャリアアドバイザーの回答</p>
+                        <p class="font-bold text-lg text-gray-800">キャリアアドバイの回答</p>
                     </div>
                     <div class="prose max-w-none text-gray-700">${item.answer}</div>
                 </div>
@@ -925,24 +925,79 @@
         };
 
         // Ask RA function
-        const askRA = (questionId) => {
-            const question = knowledgeBase.find(q => q.id === questionId);
-            if (question) {
-                question.needsRA = true;
-                question.tags = question.tags.filter(tag => tag !== 'AI回答');
-                question.tags.push('RA相談中');
-                
-                // Update the answer to show RA consultation status
-                question.answer = question.answer.replace(
-                    /<div class="text-center">.*?<\/div>/s,
-                    `<div class="p-4 bg-blue-50 rounded-lg mb-4">
-                        <h4 class="font-bold text-blue-800">RA回答依頼中</h4>
-                        <p class="text-sm">この質問はRAが詳しく調査中です。より正確で詳細な回答をお届けします。</p>
-                    </div>`
-                );
-                
-                renderFeed(knowledgeBase);
-                alert('RAに回答依頼を送信しました。より詳細な回答を準備いたします。');
+        const askRA = async (questionId) => {
+            console.log('askRA called for question:', questionId);
+            
+            // Find the question in knowledgeBase
+            const question = knowledgeBase.find(q => q.id == questionId);
+            if (!question) {
+                console.error('Question not found:', questionId);
+                return;
+            }
+            
+            // Update question status
+            question.needsRA = true;
+            question.tags = question.tags.filter(tag => tag !== 'AI回答');
+            question.tags.push('RA相談中');
+            
+            // Update the answer to show RA consultation status
+            question.answer = question.answer.replace(
+                /<div class="text-center">.*?<\/div>/s,
+                `<div class="p-4 bg-blue-50 rounded-lg mb-4">
+                    <h4 class="font-bold text-blue-800">RA回答依頼中</h4>
+                    <p class="text-sm">この質問はRAが詳しく調査中です。より正確で詳細な回答をお届けします。</p>
+                </div>`
+            );
+            
+            // Update UI immediately
+            renderFeed(knowledgeBase);
+            
+            // Show success notification
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300';
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    RAに回答依頼を送信しました。より詳細な回答を準備いたします。
+                </div>
+            `;
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+            
+            // Save to database if available
+            if (window.db) {
+                try {
+                    console.log('Saving RA request to database...');
+                    const questionsRef = ref(db, "questions");
+                    const questionRef = child(questionsRef, questionId.toString());
+                    
+                    const updateData = {
+                        needsRA: true,
+                        tags: question.tags,
+                        answer: question.answer
+                    };
+                    
+                    await update(questionRef, updateData);
+                    console.log('RA request saved to database');
+                } catch (error) {
+                    console.error('Error saving RA request to database:', error);
+                }
             }
         };
 
