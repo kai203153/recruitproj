@@ -391,103 +391,134 @@
             submitButton.disabled = true;
             submitButton.classList.add('opacity-50');
             
-            // Create question ID
-            const questionId = Date.now();
-            
-            // Generate AI response based on question content
-            const aiResponse = generateAIResponse(title, detail, questionId);
-            console.log('Generated AI response:', aiResponse); // Debug log
-            
-            // Create new question object
-            const newQuestion = {
-                id: questionId,
-                questioner: {
-                    age: "匿名",
-                    industry: "匿名",
-                    job: "匿名",
-                },
-                question: title,
-                answer: aiResponse,
-                tags: ["新規質問", "AI回答"],
-                views: 0,
-                likes: 0,
-                hasAIResponse: true,
-                needsRA: false
-            };
-            
-            // Save to Firestore if available
-            if (window.db) {
-                const savedId = await saveQuestionToFirestore(newQuestion);
-                if (savedId) {
-                    newQuestion.id = savedId; // Use Firestore ID
-                    console.log('Question saved to Firestore with ID:', savedId);
+            try {
+                // Create question ID
+                const questionId = Date.now();
+                
+                // Generate AI response based on question content
+                const aiResponse = generateAIResponse(title, detail, questionId);
+                console.log('Generated AI response:', aiResponse); // Debug log
+                
+                // Create new question object
+                const newQuestion = {
+                    id: questionId,
+                    questioner: {
+                        age: "匿名",
+                        industry: "匿名",
+                        job: "匿名",
+                    },
+                    question: title,
+                    answer: aiResponse,
+                    tags: ["新規質問", "AI回答"],
+                    views: 0,
+                    likes: 0,
+                    hasAIResponse: true,
+                    needsRA: false
+                };
+                
+                // Save to Firestore if available
+                if (window.db) {
+                    const savedId = await saveQuestionToFirestore(newQuestion);
+                    if (savedId) {
+                        newQuestion.id = savedId; // Use Firestore ID
+                        console.log('Question saved to Firestore with ID:', savedId);
+                    }
                 }
-            }
-            
-            // Add to knowledge base for immediate display
-            knowledgeBase.unshift(newQuestion);
-            console.log('Added question to knowledge base:', newQuestion); // Debug log
-            
-            // Re-render feed
-            renderFeed(knowledgeBase);
-            
-            // Highlight the new question
-            setTimeout(() => {
-                const firstCard = document.querySelector('.q-card');
-                if (firstCard) {
-                    firstCard.style.transform = 'scale(1.02)';
-                    firstCard.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
-                    firstCard.style.borderColor = '#3B82F6';
+                
+                // Add to knowledge base for immediate display
+                knowledgeBase.unshift(newQuestion);
+                console.log('Added question to knowledge base:', newQuestion); // Debug log
+                
+                // Re-render feed
+                renderFeed(knowledgeBase);
+                
+                // Highlight the new question
+                setTimeout(() => {
+                    const firstCard = document.querySelector('.q-card');
+                    if (firstCard) {
+                        firstCard.style.transform = 'scale(1.02)';
+                        firstCard.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
+                        firstCard.style.borderColor = '#3B82F6';
+                        
+                        // Reset after 2 seconds
+                        setTimeout(() => {
+                            firstCard.style.transform = '';
+                            firstCard.style.boxShadow = '';
+                            firstCard.style.borderColor = '';
+                        }, 2000);
+                    }
+                }, 100);
+                
+                // Clear the form
+                document.getElementById('question-title').value = '';
+                document.getElementById('question-detail').value = '';
+                
+                // Close modal
+                closeModal();
+                
+                // Show success message with visual feedback
+                setTimeout(() => {
+                    // Create a success notification
+                    const notification = document.createElement('div');
+                    notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300';
+                    notification.innerHTML = `
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            質問を投稿しました！AIが回答を生成しました。
+                        </div>
+                    `;
+                    document.body.appendChild(notification);
                     
-                    // Reset after 2 seconds
+                    // Animate in
                     setTimeout(() => {
-                        firstCard.style.transform = '';
-                        firstCard.style.boxShadow = '';
-                        firstCard.style.borderColor = '';
-                    }, 2000);
-                }
-            }, 100);
-            
-            // Clear the form
-            document.getElementById('question-title').value = '';
-            document.getElementById('question-detail').value = '';
-            
-            // Reset button state
-            submitButton.innerHTML = originalText;
-            submitButton.disabled = false;
-            submitButton.classList.remove('opacity-50');
-            
-            // Close modal
-            closeModal();
-            
-            // Show success message with visual feedback
-            setTimeout(() => {
-                // Create a success notification
-                const notification = document.createElement('div');
-                notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300';
-                notification.innerHTML = `
+                        notification.style.transform = 'translateX(0)';
+                    }, 100);
+                    
+                    // Remove after 3 seconds
+                    setTimeout(() => {
+                        notification.style.transform = 'translateX(100%)';
+                        setTimeout(() => {
+                            document.body.removeChild(notification);
+                        }, 300);
+                    }, 3000);
+                }, 100);
+                
+            } catch (error) {
+                console.error('Error submitting question:', error);
+                
+                // Show error notification
+                const errorNotification = document.createElement('div');
+                errorNotification.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300';
+                errorNotification.innerHTML = `
                     <div class="flex items-center">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
-                        質問を投稿しました！AIが回答を生成しました。
+                        投稿に失敗しました。もう一度お試しください。
                     </div>
                 `;
-                document.body.appendChild(notification);
+                document.body.appendChild(errorNotification);
                 
                 // Animate in
                 setTimeout(() => {
-                    notification.style.transform = 'translateX(0)';
+                    errorNotification.style.transform = 'translateX(0)';
                 }, 100);
                 
                 // Remove after 3 seconds
                 setTimeout(() => {
-                    notification.style.transform = 'translateX(100%)';
+                    errorNotification.style.transform = 'translateX(100%)';
                     setTimeout(() => {
-                        document.body.removeChild(notification);
+                        document.body.removeChild(errorNotification);
                     }, 300);
                 }, 3000);
-            }, 100);
+            } finally {
+                // Always reset button state
+                submitButton.innerHTML = originalText;
+                submitButton.disabled = false;
+                submitButton.classList.remove('opacity-50');
+            }
         };
 
         // Generate AI response
