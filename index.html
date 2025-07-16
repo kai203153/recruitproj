@@ -13,6 +13,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getFirestore, collection, addDoc, getDocs, onSnapshot, orderBy, query, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         
         // Firebase configuration
         const firebaseConfig = {
@@ -28,9 +29,13 @@
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
+        const googleProvider = new GoogleAuthProvider();
         
         // Make Firebase available globally
         window.db = db;
+        window.auth = auth;
+        window.googleProvider = googleProvider;
         window.addDoc = addDoc;
         window.collection = collection;
         window.getDocs = getDocs;
@@ -38,6 +43,11 @@
         window.orderBy = orderBy;
         window.query = query;
         window.serverTimestamp = serverTimestamp;
+        window.signInWithPopup = signInWithPopup;
+        window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+        window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
+        window.signOut = signOut;
+        window.onAuthStateChanged = onAuthStateChanged;
     </script>
     <style>
         body {
@@ -63,9 +73,30 @@
 
     <div class="container mx-auto p-4 md:p-8 max-w-4xl">
         <!-- Header -->
-        <header class="text-center mb-8">
-            <h1 class="text-3xl md:text-4xl font-bold text-blue-600">転職リアルQ&A</h1>
-            <p class="mt-2 text-gray-600">エージェントには聞きにくい「ホントのところ」、ここで見つかる・質問できる。</p>
+        <header class="mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <div class="text-center flex-1">
+                    <h1 class="text-3xl md:text-4xl font-bold text-blue-600">転職リアルQ&A</h1>
+                    <p class="mt-2 text-gray-600">エージェントには聞きにくい「ホントのところ」、ここで見つかる・質問できる。</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div id="auth-buttons" class="hidden">
+                        <button onclick="openLoginModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                            ログイン
+                        </button>
+                    </div>
+                    <div id="user-menu" class="hidden">
+                        <div class="flex items-center space-x-3">
+                            <button onclick="openMyPage()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                                マイページ
+                            </button>
+                            <button onclick="logout()" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">
+                                ログアウト
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </header>
 
         <!-- Search / New Question Area -->
@@ -93,6 +124,69 @@
             </div>
             <div class="p-4 bg-gray-50 border-t border-gray-200 rounded-b-2xl text-right">
                 <button id="close-modal-btn" class="bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-full hover:bg-gray-300 transition-colors">閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 hidden modal-backdrop">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md opacity-0 transform scale-95 transition-all duration-300">
+            <div class="p-8">
+                <h2 class="text-2xl font-bold mb-6 text-gray-900">ログイン</h2>
+                
+                <!-- Login Form -->
+                <form id="login-form" class="space-y-4 mb-6">
+                    <div>
+                        <label for="login-email" class="block text-sm font-medium text-gray-700 mb-1">メールアドレス</label>
+                        <input type="email" id="login-email" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                    </div>
+                    <div>
+                        <label for="login-password" class="block text-sm font-medium text-gray-700 mb-1">パスワード</label>
+                        <input type="password" id="login-password" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors">
+                        ログイン
+                    </button>
+                </form>
+                
+                <!-- Register Form -->
+                <form id="register-form" class="space-y-4 mb-6 hidden">
+                    <div>
+                        <label for="register-email" class="block text-sm font-medium text-gray-700 mb-1">メールアドレス</label>
+                        <input type="email" id="register-email" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                    </div>
+                    <div>
+                        <label for="register-password" class="block text-sm font-medium text-gray-700 mb-1">パスワード</label>
+                        <input type="password" id="register-password" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                    </div>
+                    <button type="submit" class="w-full bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-700 transition-colors">
+                        新規登録
+                    </button>
+                </form>
+                
+                <!-- Google Login -->
+                <div class="text-center">
+                    <div class="border-t border-gray-200 my-4"></div>
+                    <button onclick="googleLogin()" class="w-full bg-white border border-gray-300 text-gray-700 font-bold py-3 px-6 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        Googleでログイン
+                    </button>
+                </div>
+                
+                <!-- Toggle Forms -->
+                <div class="text-center mt-4">
+                    <button id="toggle-form-btn" onclick="toggleLoginForm()" class="text-blue-600 hover:text-blue-800 text-sm">
+                        新規登録はこちら
+                    </button>
+                </div>
+            </div>
+            <div class="p-4 bg-gray-50 border-t border-gray-200 rounded-b-2xl text-right">
+                <button onclick="closeLoginModal()" class="bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-full hover:bg-gray-300 transition-colors">閉じる</button>
             </div>
         </div>
     </div>
@@ -330,7 +424,12 @@
                         </div>
                         <div class="flex items-center space-x-4 flex-shrink-0 mt-2 md:mt-0">
                             <span class="flex items-center"><svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z" /><path fill-rule="evenodd" d="M.458 10C3.732 4.943 7.523 3 10 3s6.268 1.943 9.542 7c-3.274 5.057-7.03 7-9.542 7S3.732 15.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" /></svg>${item.views}</span>
-                            <span class="flex items-center"><svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" /></svg>${item.likes}</span>
+                            <button onclick="toggleLike(${item.id}, event)" class="flex items-center hover:text-red-500 transition-colors">
+                                <svg class="h-4 w-4 mr-1 ${item.userLiked ? 'text-red-500 fill-current' : 'text-gray-400'}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+                                </svg>
+                                <span class="${item.userLiked ? 'text-red-500' : 'text-gray-500'}">${item.likes}</span>
+                            </button>
                         </div>
                     </div>
                 `;
@@ -734,6 +833,55 @@
             return response;
         };
 
+        // Toggle like function
+        const toggleLike = (questionId, event) => {
+            event.stopPropagation(); // Prevent modal from opening
+            
+            const question = knowledgeBase.find(q => q.id === questionId);
+            if (question) {
+                if (question.userLiked) {
+                    question.likes--;
+                    question.userLiked = false;
+                } else {
+                    question.likes++;
+                    question.userLiked = true;
+                }
+                
+                // Update the button appearance
+                const button = event.currentTarget;
+                const icon = button.querySelector('svg');
+                const count = button.querySelector('span');
+                
+                if (question.userLiked) {
+                    icon.classList.add('text-red-500', 'fill-current');
+                    icon.classList.remove('text-gray-400');
+                    count.classList.add('text-red-500');
+                    count.classList.remove('text-gray-500');
+                } else {
+                    icon.classList.remove('text-red-500', 'fill-current');
+                    icon.classList.add('text-gray-400');
+                    count.classList.remove('text-red-500');
+                    count.classList.add('text-gray-500');
+                }
+                
+                count.textContent = question.likes;
+                
+                // Save to localStorage for persistence
+                const likedQuestions = JSON.parse(localStorage.getItem('likedQuestions') || '[]');
+                if (question.userLiked) {
+                    if (!likedQuestions.includes(questionId)) {
+                        likedQuestions.push(questionId);
+                    }
+                } else {
+                    const index = likedQuestions.indexOf(questionId);
+                    if (index > -1) {
+                        likedQuestions.splice(index, 1);
+                    }
+                }
+                localStorage.setItem('likedQuestions', JSON.stringify(likedQuestions));
+            }
+        };
+
         // Ask RA function
         const askRA = (questionId) => {
             const question = knowledgeBase.find(q => q.id === questionId);
@@ -789,7 +937,178 @@
                 closeModal();
             }
         });
+        
+        // Login form event listeners
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            emailLogin(email, password);
+        });
+        
+        document.getElementById('register-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            emailRegister(email, password);
+        });
+        
+        // Login modal close on backdrop click
+        document.getElementById('login-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'login-modal') {
+                closeLoginModal();
+            }
+        });
 
+        // --- Authentication Functions ---
+        
+        // Global user state
+        let currentUser = null;
+        
+        // Open login modal
+        const openLoginModal = () => {
+            const modal = document.getElementById('login-modal');
+            const modalContent = modal.querySelector('.bg-white');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.add('opacity-100');
+                modalContent.classList.remove('opacity-0', 'scale-95');
+                modalContent.classList.add('opacity-100', 'scale-100');
+            }, 10);
+        };
+        
+        // Close login modal
+        const closeLoginModal = () => {
+            const modal = document.getElementById('login-modal');
+            const modalContent = modal.querySelector('.bg-white');
+            modal.classList.remove('opacity-100');
+            modalContent.classList.remove('opacity-100', 'scale-100');
+            modalContent.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        };
+        
+        // Toggle between login and register forms
+        const toggleLoginForm = () => {
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            const toggleBtn = document.getElementById('toggle-form-btn');
+            
+            if (loginForm.classList.contains('hidden')) {
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+                toggleBtn.textContent = '新規登録はこちら';
+            } else {
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+                toggleBtn.textContent = 'ログインはこちら';
+            }
+        };
+        
+        // Google login
+        const googleLogin = async () => {
+            try {
+                const result = await signInWithPopup(auth, googleProvider);
+                currentUser = result.user;
+                closeLoginModal();
+                updateAuthUI();
+                showNotification('Googleでログインしました！', 'success');
+            } catch (error) {
+                console.error('Google login error:', error);
+                showNotification('ログインに失敗しました。', 'error');
+            }
+        };
+        
+        // Email/password login
+        const emailLogin = async (email, password) => {
+            try {
+                const result = await signInWithEmailAndPassword(auth, email, password);
+                currentUser = result.user;
+                closeLoginModal();
+                updateAuthUI();
+                showNotification('ログインしました！', 'success');
+            } catch (error) {
+                console.error('Login error:', error);
+                showNotification('ログインに失敗しました。', 'error');
+            }
+        };
+        
+        // Email/password register
+        const emailRegister = async (email, password) => {
+            try {
+                const result = await createUserWithEmailAndPassword(auth, email, password);
+                currentUser = result.user;
+                closeLoginModal();
+                updateAuthUI();
+                showNotification('アカウントを作成しました！', 'success');
+            } catch (error) {
+                console.error('Register error:', error);
+                showNotification('アカウント作成に失敗しました。', 'error');
+            }
+        };
+        
+        // Logout
+        const logout = async () => {
+            try {
+                await signOut(auth);
+                currentUser = null;
+                updateAuthUI();
+                showNotification('ログアウトしました。', 'success');
+            } catch (error) {
+                console.error('Logout error:', error);
+                showNotification('ログアウトに失敗しました。', 'error');
+            }
+        };
+        
+        // Update auth UI
+        const updateAuthUI = () => {
+            const authButtons = document.getElementById('auth-buttons');
+            const userMenu = document.getElementById('user-menu');
+            
+            if (currentUser) {
+                authButtons.classList.add('hidden');
+                userMenu.classList.remove('hidden');
+            } else {
+                authButtons.classList.remove('hidden');
+                userMenu.classList.add('hidden');
+            }
+        };
+        
+        // Show notification
+        const showNotification = (message, type = 'info') => {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300 ${
+                type === 'success' ? 'bg-green-500 text-white' : 
+                type === 'error' ? 'bg-red-500 text-white' : 
+                'bg-blue-500 text-white'
+            }`;
+            notification.innerHTML = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        };
+        
+        // Open my page
+        const openMyPage = () => {
+            if (!currentUser) {
+                showNotification('ログインしてください。', 'error');
+                return;
+            }
+            
+            // For now, just show user info
+            alert(`マイページ\nユーザー: ${currentUser.email || currentUser.displayName}\n機能は開発中です。`);
+        };
+        
         // --- Firebase Functions ---
         
         // Load questions from Firestore
@@ -862,6 +1181,12 @@
         // --- Initial Render ---
         // Wait for Firebase to initialize, then load questions
         const initializeApp = () => {
+            // Restore liked questions from localStorage
+            const likedQuestions = JSON.parse(localStorage.getItem('likedQuestions') || '[]');
+            knowledgeBase.forEach(question => {
+                question.userLiked = likedQuestions.includes(question.id);
+            });
+            
             if (window.db) {
                 console.log('Firebase initialized, loading questions...');
                 loadQuestionsFromFirestore();
@@ -871,9 +1196,24 @@
             }
         };
         
+        // Initialize auth state listener
+        const initializeAuth = () => {
+            if (window.auth) {
+                onAuthStateChanged(auth, (user) => {
+                    currentUser = user;
+                    updateAuthUI();
+                    console.log('Auth state changed:', user ? user.email : 'No user');
+                });
+            }
+        };
+        
         // Try to initialize immediately, then retry after a delay
         initializeApp();
-        setTimeout(initializeApp, 2000);
+        initializeAuth();
+        setTimeout(() => {
+            initializeApp();
+            initializeAuth();
+        }, 2000);
     </script>
 
 </body>
