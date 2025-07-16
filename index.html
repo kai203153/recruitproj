@@ -379,6 +379,18 @@
                 return;
             }
             
+            // Get submit button and change its state
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            const originalText = submitButton.innerHTML;
+            submitButton.innerHTML = `
+                <svg class="inline-block w-4 h-4 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                投稿中...
+            `;
+            submitButton.disabled = true;
+            submitButton.classList.add('opacity-50');
+            
             // Create question ID
             const questionId = Date.now();
             
@@ -419,16 +431,62 @@
             // Re-render feed
             renderFeed(knowledgeBase);
             
+            // Highlight the new question
+            setTimeout(() => {
+                const firstCard = document.querySelector('.q-card');
+                if (firstCard) {
+                    firstCard.style.transform = 'scale(1.02)';
+                    firstCard.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
+                    firstCard.style.borderColor = '#3B82F6';
+                    
+                    // Reset after 2 seconds
+                    setTimeout(() => {
+                        firstCard.style.transform = '';
+                        firstCard.style.boxShadow = '';
+                        firstCard.style.borderColor = '';
+                    }, 2000);
+                }
+            }, 100);
+            
             // Clear the form
             document.getElementById('question-title').value = '';
             document.getElementById('question-detail').value = '';
             
+            // Reset button state
+            submitButton.innerHTML = originalText;
+            submitButton.disabled = false;
+            submitButton.classList.remove('opacity-50');
+            
             // Close modal
             closeModal();
             
-            // Show success message
+            // Show success message with visual feedback
             setTimeout(() => {
-                alert('質問を投稿しました！AIが回答を生成しました。');
+                // Create a success notification
+                const notification = document.createElement('div');
+                notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300';
+                notification.innerHTML = `
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        質問を投稿しました！AIが回答を生成しました。
+                    </div>
+                `;
+                document.body.appendChild(notification);
+                
+                // Animate in
+                setTimeout(() => {
+                    notification.style.transform = 'translateX(0)';
+                }, 100);
+                
+                // Remove after 3 seconds
+                setTimeout(() => {
+                    notification.style.transform = 'translateX(100%)';
+                    setTimeout(() => {
+                        document.body.removeChild(notification);
+                    }, 300);
+                }, 3000);
             }, 100);
         };
 
