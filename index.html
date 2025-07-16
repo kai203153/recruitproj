@@ -205,6 +205,7 @@
                     job: "エンジニア",
                 },
                 question: "リクルートの面接って圧迫面接ですか？",
+                detail: "現在IT企業でエンジニアとして働いていますが、リクルートへの転職を考えています。面接で圧迫的な質問をされることが多いと聞いたのですが、実際のところどうでしょうか？特に技術面接での雰囲気について教えてください。",
                 postedAt: new Date('2024-01-15T10:30:00').getTime(),
                 answeredAt: new Date('2024-01-15T14:45:00').getTime(),
                 answer: `
@@ -249,6 +250,7 @@
                     job: "マーケター",
                 },
                 question: "リクルートの働き方について。残業は多いですか？ワークライフバランスは取れますか？",
+                detail: "現在Webサービス企業でマーケターとして働いています。リクルートへの転職を検討していますが、残業時間やワークライフバランスが気になります。特に子育て中の女性として、育休制度や時短勤務の実態についても知りたいです。",
                 postedAt: new Date('2024-01-10T09:15:00').getTime(),
                 answeredAt: new Date('2024-01-10T16:20:00').getTime(),
                 answer: `
@@ -277,6 +279,7 @@
                     job: "営業",
                 },
                 question: "リクルートの給与体系について。ミッショングレード制とは具体的にどういうものですか？",
+                detail: "不動産営業からリクルートへの転職を考えています。ミッショングレード制について詳しく知りたいです。特に、営業職での年収相場や、ミッションの難易度によって給与がどの程度変動するのか、具体的な数字も教えていただけますか？",
                 postedAt: new Date('2024-01-08T13:45:00').getTime(),
                 answeredAt: new Date('2024-01-08T18:30:00').getTime(),
                 answer: `
@@ -306,6 +309,7 @@
                     job: "エンジニア",
                 },
                 question: "リクルートの社内異動制度「ミッショングラブ」は、本当に機能していますか？希望は通りやすいですか？",
+                detail: "現在ITエンジニアとして働いていますが、将来的には企画職やマーケティング職に転向したいと考えています。ミッショングラブ制度を使って異動する場合、未経験の職種でも応募できるのでしょうか？また、異動の成功率はどの程度でしょうか？",
                 postedAt: new Date('2024-01-05T11:20:00').getTime(),
                 answeredAt: new Date('2024-01-05T15:10:00').getTime(),
                 answer: `
@@ -334,6 +338,7 @@
                     job: "企画職",
                 },
                 question: "リクルートって、体育会系の文化が強いって本当ですか？飲み会とかも激しいんでしょうか？",
+                detail: "広告・メディア業界で企画職として働いています。リクルートへの転職を検討していますが、体育会系の文化が強いと聞いて少し不安です。特に飲み会の頻度や、参加が強制されるような雰囲気があるのか、女性として働きやすい環境なのか教えてください。",
                 postedAt: new Date('2024-01-03T14:30:00').getTime(),
                 answeredAt: new Date('2024-01-03T17:45:00').getTime(),
                 answer: `
@@ -363,6 +368,7 @@
                     job: "営業職",
                 },
                 question: "リクルートとパーソル、若手の裁量権と成長環境って、ぶっちゃけどう違いますか？",
+                detail: "IT・通信業界で営業職として働いています。リクルートとパーソルの両方からオファーをいただいているのですが、若手の裁量権や成長環境の違いが気になります。特に、入社1-3年目での業務の自由度や、上司からのサポート体制について詳しく知りたいです。",
                 postedAt: new Date('2024-01-01T08:45:00').getTime(),
                 answeredAt: new Date('2024-01-01T12:15:00').getTime(),
                 answer: `
@@ -454,7 +460,8 @@
                             <p class="text-sm text-gray-500">${item.questioner.industry}業界</p>
                         </div>
                     </div>
-                    <h2 class="text-xl font-bold mb-3 text-gray-900">${item.question}</h2>
+                    <h2 class="text-xl font-bold mb-2 text-gray-900">${item.question}</h2>
+                    ${item.detail ? `<div class="text-gray-600 text-sm mb-3 bg-gray-50 p-3 rounded-lg"><strong>詳細:</strong> ${item.detail}</div>` : ''}
                     <div class="text-gray-600 text-sm mb-4">${answerExcerpt}</div>
                     <div class="flex justify-between items-center text-sm text-gray-500">
                         <div class="flex flex-wrap gap-2">
@@ -496,7 +503,8 @@
                         <p class="text-md text-gray-500">${item.questioner.industry}業界</p>
                     </div>
                 </div>
-                <h2 class="text-2xl font-bold mb-4 text-gray-900">${item.question}</h2>
+                <h2 class="text-2xl font-bold mb-3 text-gray-900">${item.question}</h2>
+                ${item.detail ? `<div class="text-gray-600 mb-4 bg-gray-50 p-4 rounded-lg"><strong>詳細:</strong><br>${item.detail}</div>` : ''}
                 <div class="flex items-center text-sm text-gray-500 mb-6">
                     <span class="mr-4">投稿: ${item.postedAt ? formatDate(item.postedAt) : '不明'}</span>
                     ${item.answeredAt ? `<span>回答: ${formatDate(item.answeredAt)}</span>` : ''}
@@ -629,6 +637,7 @@
                         job: "匿名",
                     },
                     question: title,
+                    detail: detail, // 詳細を追加
                     answer: aiResponse,
                     tags: aiTags,
                     views: 0,
@@ -1491,6 +1500,7 @@
                                 id: key,
                                 questioner: questionData.questioner || { age: "匿名", industry: "匿名", job: "匿名" },
                                 question: questionData.question,
+                                detail: questionData.detail || '', // 詳細を追加
                                 answer: questionData.answer,
                                 tags: questionData.tags || [],
                                 views: questionData.views || 0,
@@ -1543,6 +1553,7 @@
                 const questionDataToSave = {
                     questioner: questionData.questioner,
                     question: questionData.question,
+                    detail: questionData.detail || '', // 詳細を追加
                     answer: questionData.answer,
                     tags: questionData.tags,
                     views: questionData.views,
