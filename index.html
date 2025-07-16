@@ -205,6 +205,8 @@
                     job: "エンジニア",
                 },
                 question: "リクルートの面接って圧迫面接ですか？",
+                postedAt: new Date('2024-01-15T10:30:00').getTime(),
+                answeredAt: new Date('2024-01-15T14:45:00').getTime(),
                 answer: `
                     <p class="mb-4">面接の雰囲気についてのご質問ですね。多くの候補者様が気にされるポイントです。</p>
                     <p class="mb-3"><strong>【結論】</strong><br>過去の志願者からの面接フィードバックによると、圧迫面接というよりかは、自分のことを言語化できているのか、過去の自分を自己分析できているのかを深掘りできるかを重要視されています。</p>
@@ -247,6 +249,8 @@
                     job: "マーケター",
                 },
                 question: "リクルートの働き方について。残業は多いですか？ワークライフバランスは取れますか？",
+                postedAt: new Date('2024-01-10T09:15:00').getTime(),
+                answeredAt: new Date('2024-01-10T16:20:00').getTime(),
                 answer: `
                     <p class="mb-4">働き方に関するご質問ですね。リクルートは「スマートワーク」を掲げており、働き方改革には全社で力を入れています。</p>
                     <p class="mb-3"><strong>【結論】</strong><br>部署や時期による、というのが実態ですが、全社的には残業時間は減少傾向にあります。月平均で20〜30時間程度の部署が多い印象です。</p>
@@ -273,6 +277,8 @@
                     job: "営業",
                 },
                 question: "リクルートの給与体系について。ミッショングレード制とは具体的にどういうものですか？",
+                postedAt: new Date('2024-01-08T13:45:00').getTime(),
+                answeredAt: new Date('2024-01-08T18:30:00').getTime(),
                 answer: `
                     <p class="mb-4">給与体系、特にミッショングレード制についての質問ですね。これはリクルートの大きな特徴の一つです。</p>
                     <p class="mb-3"><strong>【結論】</strong><br>年齢や社歴ではなく「担うミッション（職務）の価値」によって報酬が決まる制度です。半期ごとにミッションの見直しがあり、その内容によって給与が変動します。</p>
@@ -300,6 +306,8 @@
                     job: "エンジニア",
                 },
                 question: "リクルートの社内異動制度「ミッショングラブ」は、本当に機能していますか？希望は通りやすいですか？",
+                postedAt: new Date('2024-01-05T11:20:00').getTime(),
+                answeredAt: new Date('2024-01-05T15:10:00').getTime(),
                 answer: `
                     <p class="mb-4">「ミッショングラブ」についてですね。キャリアの自律性を重んじるリクルートを象徴する制度です。</p>
                     <p class="mb-3"><strong>【結論】</strong><br>はい、非常に活発に機能しています。多くの社員がこの制度を使ってキャリアチェンジを実現しています。</p>
@@ -326,6 +334,8 @@
                     job: "企画職",
                 },
                 question: "リクルートって、体育会系の文化が強いって本当ですか？飲み会とかも激しいんでしょうか？",
+                postedAt: new Date('2024-01-03T14:30:00').getTime(),
+                answeredAt: new Date('2024-01-03T17:45:00').getTime(),
                 answer: `
                     <p class="mb-4">「リクルートの社風」に関するご質問、ありがとうございます。これは昔からよく聞かれる質問ですね。</p>
                     <p class="mb-3"><strong>【結論】</strong><br>「体育会系」という言葉のイメージによりますが、「目標達成への意識が非常に高く、エネルギッシュな文化」という意味では、その側面は今でも存在します。ただし、一昔前の「飲み会が激しい」「上下関係が絶対」といったイメージとは大きく異なってきています。</p>
@@ -353,6 +363,8 @@
                     job: "営業職",
                 },
                 question: "リクルートとパーソル、若手の裁量権と成長環境って、ぶっちゃけどう違いますか？",
+                postedAt: new Date('2024-01-01T08:45:00').getTime(),
+                answeredAt: new Date('2024-01-01T12:15:00').getTime(),
                 answer: `
                     <p class="mb-4">ご質問ありがとうございます。リクルートとパーソルの若手育成に関するリアルな情報ですね。多くの候補者様が気にされるポイントです。</p>
                     <p class="mb-3"><strong>【結論】</strong><br>早くから挑戦したいならリクルート、じっくり育ててほしいならパーソル、というのが元社員や現役社員から聞くリアルな声です。</p>
@@ -392,6 +404,30 @@
 
         // --- Functions ---
 
+        // Format date for display
+        const formatDate = (timestamp) => {
+            if (!timestamp) return '';
+            
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diffInHours = (now - date) / (1000 * 60 * 60);
+            
+            if (diffInHours < 1) {
+                const diffInMinutes = Math.floor((now - date) / (1000 * 60));
+                return `${diffInMinutes}分前`;
+            } else if (diffInHours < 24) {
+                return `${Math.floor(diffInHours)}時間前`;
+            } else if (diffInHours < 24 * 7) {
+                return `${Math.floor(diffInHours / 24)}日前`;
+            } else {
+                return date.toLocaleDateString('ja-JP', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+            }
+        };
+
         // Render Q&A cards
         const renderFeed = (items) => {
             qaFeed.innerHTML = '';
@@ -425,6 +461,13 @@
                             ${item.tags.map(tag => `<span class="bg-gray-100 text-gray-600 px-2 py-1 rounded-md text-xs font-medium">#${tag}</span>`).join('')}
                         </div>
                         <div class="flex items-center space-x-4 flex-shrink-0 mt-2 md:mt-0">
+                            <span class="flex items-center text-xs text-gray-400">
+                                <svg class="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                ${item.postedAt ? `投稿: ${formatDate(item.postedAt)}` : ''}
+                                ${item.answeredAt ? `・回答: ${formatDate(item.answeredAt)}` : ''}
+                            </span>
                             <span class="flex items-center"><svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z" /><path fill-rule="evenodd" d="M.458 10C3.732 4.943 7.523 3 10 3s6.268 1.943 9.542 7c-3.274 5.057-7.03 7-9.542 7S3.732 15.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" /></svg>${item.views}</span>
                             <button onclick="toggleLike(${item.id}, event)" class="flex items-center hover:text-red-500 transition-colors">
                                 <svg class="h-4 w-4 mr-1 ${item.userLiked ? 'text-red-500 fill-current' : 'text-gray-400'}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -453,7 +496,11 @@
                         <p class="text-md text-gray-500">${item.questioner.industry}業界</p>
                     </div>
                 </div>
-                <h2 class="text-2xl font-bold mb-6 text-gray-900">${item.question}</h2>
+                <h2 class="text-2xl font-bold mb-4 text-gray-900">${item.question}</h2>
+                <div class="flex items-center text-sm text-gray-500 mb-6">
+                    <span class="mr-4">投稿: ${item.postedAt ? formatDate(item.postedAt) : '不明'}</span>
+                    ${item.answeredAt ? `<span>回答: ${formatDate(item.answeredAt)}</span>` : ''}
+                </div>
                 <div class="border-t border-gray-200 pt-6">
                     <div class="flex items-center mb-4">
                          <div class="flex-shrink-0 mr-4">
@@ -461,7 +508,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
                             </div>
                         </div>
-                        <p class="font-bold text-lg text-gray-800">キャリアアドバイの回答</p>
+                        <p class="font-bold text-lg text-gray-800">RAの回答</p>
                     </div>
                     <div class="prose max-w-none text-gray-700">${item.answer}</div>
                 </div>
@@ -569,6 +616,10 @@
                 const aiResponse = generateAIResponse(title, detail, questionId);
                 console.log('Generated AI response:', aiResponse); // Debug log
                 
+                // Generate AI tags based on question content
+                const aiTags = generateAITags(title, detail);
+                console.log('Generated AI tags:', aiTags);
+                
                 // Create new question object
                 const newQuestion = {
                     id: questionId,
@@ -579,11 +630,13 @@
                     },
                     question: title,
                     answer: aiResponse,
-                    tags: ["新規質問", "AI回答"],
+                    tags: aiTags,
                     views: 0,
                     likes: 0,
                     hasAIResponse: true,
-                    needsRA: false
+                    needsRA: false,
+                    postedAt: Date.now(),
+                    answeredAt: Date.now() // AI回答なので即座に回答
                 };
                 
                         // Save to Database if available
@@ -726,6 +779,75 @@
                 // Reset submission flag
                 isSubmitting = false;
             }
+        };
+
+        // Generate AI tags based on question content
+        const generateAITags = (title, detail) => {
+            const questionText = title + (detail ? ' ' + detail : '');
+            const lowerQuestion = questionText.toLowerCase();
+            const tags = ["新規質問"];
+            
+            // Company tags
+            if (lowerQuestion.includes('リクルート') || lowerQuestion.includes('recruit')) {
+                tags.push("リクルート");
+            }
+            if (lowerQuestion.includes('パーソル') || lowerQuestion.includes('persol')) {
+                tags.push("パーソル");
+            }
+            if (lowerQuestion.includes('マイナビ') || lowerQuestion.includes('mynavi')) {
+                tags.push("マイナビ");
+            }
+            if (lowerQuestion.includes('doda') || lowerQuestion.includes('デューダ')) {
+                tags.push("doda");
+            }
+            
+            // Topic tags
+            if (lowerQuestion.includes('面接') || lowerQuestion.includes('圧迫') || lowerQuestion.includes('interview')) {
+                tags.push("面接対策");
+            }
+            if (lowerQuestion.includes('給与') || lowerQuestion.includes('年収') || lowerQuestion.includes('salary')) {
+                tags.push("給与・年収");
+            }
+            if (lowerQuestion.includes('働き方') || lowerQuestion.includes('残業') || lowerQuestion.includes('wlb')) {
+                tags.push("働き方");
+            }
+            if (lowerQuestion.includes('転職') || lowerQuestion.includes('job change')) {
+                tags.push("転職");
+            }
+            if (lowerQuestion.includes('キャリア') || lowerQuestion.includes('career')) {
+                tags.push("キャリア");
+            }
+            if (lowerQuestion.includes('育休') || lowerQuestion.includes('産休') || lowerQuestion.includes('maternity')) {
+                tags.push("育休・産休");
+            }
+            if (lowerQuestion.includes('ミッション') || lowerQuestion.includes('mission')) {
+                tags.push("ミッション制度");
+            }
+            if (lowerQuestion.includes('比較') || lowerQuestion.includes('違い') || lowerQuestion.includes('compare')) {
+                tags.push("企業比較");
+            }
+            
+            // Industry tags
+            if (lowerQuestion.includes('it') || lowerQuestion.includes('エンジニア') || lowerQuestion.includes('プログラマー')) {
+                tags.push("IT・エンジニア");
+            }
+            if (lowerQuestion.includes('営業') || lowerQuestion.includes('sales')) {
+                tags.push("営業");
+            }
+            if (lowerQuestion.includes('マーケティング') || lowerQuestion.includes('marketing')) {
+                tags.push("マーケティング");
+            }
+            if (lowerQuestion.includes('人事') || lowerQuestion.includes('hr')) {
+                tags.push("人事");
+            }
+            if (lowerQuestion.includes('経営') || lowerQuestion.includes('管理職')) {
+                tags.push("経営・管理職");
+            }
+            
+            // Add AI回答 tag
+            tags.push("AI回答");
+            
+            return tags;
         };
 
         // Generate AI response
@@ -938,7 +1060,14 @@
             // Update question status
             question.needsRA = true;
             question.tags = question.tags.filter(tag => tag !== 'AI回答');
-            question.tags.push('RA相談中');
+            
+            // Add RA-related tags
+            if (!question.tags.includes('RAに依頼中')) {
+                question.tags.push('RAに依頼中');
+            }
+            if (!question.tags.includes('RA相談中')) {
+                question.tags.push('RA相談中');
+            }
             
             // Update the answer to show RA consultation status
             question.answer = question.answer.replace(
@@ -1369,7 +1498,9 @@
                                 hasAIResponse: questionData.hasAIResponse || false,
                                 needsRA: questionData.needsRA || false,
                                 userId: questionData.userId || null,
-                                timestamp: questionData.timestamp
+                                timestamp: questionData.timestamp,
+                                postedAt: questionData.postedAt || questionData.timestamp,
+                                answeredAt: questionData.answeredAt || questionData.timestamp
                             });
                         });
                     }
@@ -1419,7 +1550,9 @@
                     hasAIResponse: questionData.hasAIResponse,
                     needsRA: questionData.needsRA,
                     userId: currentUser?.uid || null,
-                    timestamp: Date.now() // serverTimestamp()の代わりに現在時刻を使用
+                    timestamp: Date.now(), // serverTimestamp()の代わりに現在時刻を使用
+                    postedAt: questionData.postedAt || Date.now(),
+                    answeredAt: questionData.answeredAt || Date.now()
                 };
                 
                 console.log('Saving data:', questionDataToSave); // Debug log
