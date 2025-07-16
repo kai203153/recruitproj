@@ -8,6 +8,37 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, addDoc, getDocs, onSnapshot, orderBy, query, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCh3_5R59_Q9HwcvTlALvZiPOzg5n5YUvI",
+            authDomain: "recruitproj-ccb43.firebaseapp.com",
+            projectId: "recruitproj-ccb43",
+            storageBucket: "recruitproj-ccb43.firebasestorage.app",
+            messagingSenderId: "24003203574",
+            appId: "1:24003203574:web:10764ed34cfcf06579f7d7",
+            measurementId: "G-ZSGCF6N1FT"
+        };
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        
+        // Make Firebase available globally
+        window.db = db;
+        window.addDoc = addDoc;
+        window.collection = collection;
+        window.getDocs = getDocs;
+        window.onSnapshot = onSnapshot;
+        window.orderBy = orderBy;
+        window.query = query;
+        window.serverTimestamp = serverTimestamp;
+    </script>
     <style>
         body {
             font-family: 'Noto Sans JP', 'Inter', sans-serif;
@@ -329,7 +360,7 @@
         }
 
         // Submit new question
-        const submitNewQuestion = (e) => {
+        const submitNewQuestion = async (e) => {
             e.preventDefault();
             
             const title = document.getElementById('question-title').value.trim();
@@ -364,7 +395,16 @@
                 needsRA: false
             };
             
-            // Add to knowledge base
+            // Save to Firestore if available
+            if (window.db) {
+                const savedId = await saveQuestionToFirestore(newQuestion);
+                if (savedId) {
+                    newQuestion.id = savedId; // Use Firestore ID
+                    console.log('Question saved to Firestore with ID:', savedId);
+                }
+            }
+            
+            // Add to knowledge base for immediate display
             knowledgeBase.unshift(newQuestion);
             console.log('Added question to knowledge base:', newQuestion); // Debug log
             
@@ -560,8 +600,76 @@
             }
         });
 
+        // --- Firebase Functions ---
+        
+        // Load questions from Firestore
+        const loadQuestionsFromFirestore = async () => {
+            try {
+                const q = query(collection(db, "questions"), orderBy("timestamp", "desc"));
+                
+                // Set up real-time listener
+                onSnapshot(q, (querySnapshot) => {
+                    const firestoreQuestions = [];
+                    
+                    querySnapshot.forEach((doc) => {
+                        const data = doc.data();
+                        firestoreQuestions.push({
+                            id: doc.id,
+                            questioner: data.questioner || { age: "匿名", industry: "匿名", job: "匿名" },
+                            question: data.question,
+                            answer: data.answer,
+                            tags: data.tags || [],
+                            views: data.views || 0,
+                            likes: data.likes || 0,
+                            hasAIResponse: data.hasAIResponse || false,
+                            needsRA: data.needsRA || false,
+                            timestamp: data.timestamp
+                        });
+                    });
+                    
+                    // Combine with static knowledge base
+                    const allQuestions = [...firestoreQuestions, ...knowledgeBase];
+                    renderFeed(allQuestions);
+                    console.log('Real-time update: Loaded questions from Firestore:', firestoreQuestions.length);
+                });
+                
+            } catch (error) {
+                console.error("Error loading questions: ", error);
+                renderFeed(knowledgeBase);
+            }
+        };
+        
+        // Save new question to Firestore
+        const saveQuestionToFirestore = async (questionData) => {
+            try {
+                const docRef = await addDoc(collection(db, "questions"), {
+                    questioner: questionData.questioner,
+                    question: questionData.question,
+                    answer: questionData.answer,
+                    tags: questionData.tags,
+                    views: questionData.views,
+                    likes: questionData.likes,
+                    hasAIResponse: questionData.hasAIResponse,
+                    needsRA: questionData.needsRA,
+                    timestamp: serverTimestamp()
+                });
+                console.log("Question saved with ID: ", docRef.id);
+                return docRef.id;
+            } catch (error) {
+                console.error("Error saving question: ", error);
+                return null;
+            }
+        };
+        
         // --- Initial Render ---
-        renderFeed(knowledgeBase);
+        // Wait for Firebase to initialize, then load questions
+        setTimeout(() => {
+            if (window.db) {
+                loadQuestionsFromFirestore();
+            } else {
+                renderFeed(knowledgeBase);
+            }
+        }, 1000);
     </script>
 
 </body>
