@@ -23,13 +23,17 @@
             storageBucket: "recruitproj-ccb43.firebasestorage.app",
             messagingSenderId: "24003203574",
             appId: "1:24003203574:web:10764ed34cfcf06579f7d7",
-            measurementId: "G-ZSGCF6N1FT"
+            measurementId: "G-ZSGCF6N1FT",
+            databaseURL: "https://recruitproj-ccb43-default-rtdb.asia-southeast1.firebasedatabase.app"
         };
         
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
+        console.log('Firebase app initialized:', app); // Debug log
         const db = getDatabase(app);
+        console.log('Database initialized:', db); // Debug log
         const auth = getAuth(app);
+        console.log('Auth initialized:', auth); // Debug log
         const googleProvider = new GoogleAuthProvider();
         
         // Make Firebase available globally
@@ -493,8 +497,10 @@
             
             // Add form submit event listener (remove existing first to prevent duplicates)
             const form = document.getElementById('new-question-form');
+            console.log('Form found:', form); // Debug log
             form.removeEventListener('submit', submitNewQuestion); // Remove existing listener
             form.addEventListener('submit', submitNewQuestion);
+            console.log('Event listener added to form'); // Debug log
             
             // Clear any existing form data
             setTimeout(() => {
@@ -517,6 +523,7 @@
         
         // Submit new question
         const submitNewQuestion = async (e) => {
+            console.log('submitNewQuestion called'); // Debug log
             e.preventDefault();
             
             // Prevent duplicate submissions
@@ -546,13 +553,13 @@
             submitButton.disabled = true;
             submitButton.classList.add('opacity-50');
             
-            // Add a safety timeout to reset button after 10 seconds
+            // Add a safety timeout to reset button after 30 seconds
             const safetyTimeout = setTimeout(() => {
                 submitButton.innerHTML = originalText;
                 submitButton.disabled = false;
                 submitButton.classList.remove('opacity-50');
                 console.log('Button reset by safety timeout');
-            }, 10000);
+            }, 30000);
             
             try {
                 // Create question ID
@@ -579,21 +586,28 @@
                     needsRA: false
                 };
                 
-                // Save to Database if available
-                if (window.db) {
-                    try {
-                        const savedId = await saveQuestionToDatabase(newQuestion);
-                        if (savedId) {
-                            newQuestion.id = savedId; // Use Database ID
-                            newQuestion.userId = currentUser?.uid || null; // Add user ID
-                            console.log('Question saved to Database with ID:', savedId);
-                        } else {
-                            console.error('Failed to save question to Database');
-                        }
-                    } catch (error) {
-                        console.error('Error saving to Database:', error);
-                    }
+                        // Save to Database if available
+        console.log('window.db available:', !!window.db); // Debug log
+        if (window.db) {
+            try {
+                console.log('Starting database save...');
+                const savedId = await saveQuestionToDatabase(newQuestion);
+                console.log('Database save completed, ID:', savedId);
+                if (savedId) {
+                    newQuestion.id = savedId; // Use Database ID
+                    newQuestion.userId = currentUser?.uid || null; // Add user ID
+                    console.log('Question saved to Database with ID:', savedId);
+                } else {
+                    console.error('Failed to save question to Database - no ID returned');
                 }
+            } catch (error) {
+                console.error('Error saving to Database:', error);
+                console.error('Error stack:', error.stack);
+                // Continue with local save even if database fails
+            }
+        } else {
+            console.log('Database not available, saving locally only');
+        }
                 
                 // Add to knowledge base for immediate display
                 knowledgeBase.unshift(newQuestion);
@@ -1307,8 +1321,8 @@
                     
                     // Sort by timestamp (newest first)
                     databaseQuestions.sort((a, b) => {
-                        const timeA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
-                        const timeB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+                        const timeA = a.timestamp ? (typeof a.timestamp === 'number' ? a.timestamp : new Date(a.timestamp).getTime()) : 0;
+                        const timeB = b.timestamp ? (typeof b.timestamp === 'number' ? b.timestamp : new Date(b.timestamp).getTime()) : 0;
                         return timeB - timeA;
                     });
                     
@@ -1334,10 +1348,13 @@
         const saveQuestionToDatabase = async (questionData) => {
             try {
                 console.log('Attempting to save question to Database:', questionData);
+                console.log('Database object:', db); // Debug log
                 const questionsRef = ref(db, "questions");
+                console.log('Questions ref created:', questionsRef); // Debug log
                 const newQuestionRef = push(questionsRef);
+                console.log('New question ref created:', newQuestionRef); // Debug log
                 
-                await set(newQuestionRef, {
+                const questionDataToSave = {
                     questioner: questionData.questioner,
                     question: questionData.question,
                     answer: questionData.answer,
@@ -1347,15 +1364,36 @@
                     hasAIResponse: questionData.hasAIResponse,
                     needsRA: questionData.needsRA,
                     userId: currentUser?.uid || null,
-                    timestamp: serverTimestamp()
+                    timestamp: Date.now() // serverTimestamp()の代わりに現在時刻を使用
+                };
+                
+                console.log('Saving data:', questionDataToSave); // Debug log
+                
+                // Use set() with a promise wrapper and timeout to ensure proper resolution
+                return new Promise((resolve, reject) => {
+                    const timeout = setTimeout(() => {
+                        console.error('Database save timeout after 10 seconds');
+                        reject(new Error('Database save timeout'));
+                    }, 10000);
+                    
+                    set(newQuestionRef, questionDataToSave)
+                        .then(() => {
+                            clearTimeout(timeout);
+                            console.log("Question saved with ID: ", newQuestionRef.key);
+                            resolve(newQuestionRef.key);
+                        })
+                        .catch((error) => {
+                            clearTimeout(timeout);
+                            console.error("Error in set() operation: ", error);
+                            reject(error);
+                        });
                 });
                 
-                console.log("Question saved with ID: ", newQuestionRef.key);
-                return newQuestionRef.key;
             } catch (error) {
                 console.error("Error saving question: ", error);
                 console.error("Error details:", error.message, error.code);
-                return null;
+                console.error("Error stack:", error.stack);
+                throw error; // Re-throw to be caught by the caller
             }
         };
         
