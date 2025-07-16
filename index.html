@@ -539,6 +539,46 @@
         
         // Open new question modal (simulation)
         const openNewQuestionModal = () => {
+            // Check if user is logged in
+            if (!currentUser) {
+                console.log('User not logged in, showing login modal');
+                pendingQuestionPost = true; // Set flag to open question modal after login
+                closeModal(); // Close any open modal
+                openLoginModal();
+                
+                // Show notification about login requirement
+                const notification = document.createElement('div');
+                notification.className = 'fixed top-4 right-4 bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300';
+                notification.innerHTML = `
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                        質問を投稿するにはログインが必要です
+                    </div>
+                `;
+                document.body.appendChild(notification);
+                
+                // Animate in
+                setTimeout(() => {
+                    notification.style.transform = 'translateX(0)';
+                }, 100);
+                
+                // Remove after 3 seconds
+                setTimeout(() => {
+                    notification.style.transform = 'translateX(100%)';
+                    setTimeout(() => {
+                        if (document.body.contains(notification)) {
+                            document.body.removeChild(notification);
+                        }
+                    }, 300);
+                }, 3000);
+                
+                return;
+            }
+            
+            console.log('User logged in, opening question modal');
+            
              modalBody.innerHTML = `
                 <h2 class="text-2xl font-bold mb-4 text-gray-900">新しい質問を投稿する</h2>
                 <p class="text-sm text-gray-600 mb-6">ご質問は匿名で公開され、他の転職活動中の方の参考になります。個人が特定できる情報は含めないようご注意ください。</p>
@@ -1209,6 +1249,7 @@
         
         // Global user state
         let currentUser = null;
+        let pendingQuestionPost = false; // Track if user was trying to post a question
         
         // Open login modal
         const openLoginModal = () => {
@@ -1259,6 +1300,14 @@
                 closeLoginModal();
                 updateAuthUI();
                 showNotification('Googleでログインしました！', 'success');
+                
+                // Open question modal if user was trying to post a question
+                if (pendingQuestionPost) {
+                    pendingQuestionPost = false;
+                    setTimeout(() => {
+                        openNewQuestionModal();
+                    }, 500);
+                }
             } catch (error) {
                 console.error('Google login error:', error);
                 showNotification('ログインに失敗しました。', 'error');
@@ -1273,6 +1322,14 @@
                 closeLoginModal();
                 updateAuthUI();
                 showNotification('ログインしました！', 'success');
+                
+                // Open question modal if user was trying to post a question
+                if (pendingQuestionPost) {
+                    pendingQuestionPost = false;
+                    setTimeout(() => {
+                        openNewQuestionModal();
+                    }, 500);
+                }
             } catch (error) {
                 console.error('Login error:', error);
                 showNotification('ログインに失敗しました。', 'error');
@@ -1287,6 +1344,14 @@
                 closeLoginModal();
                 updateAuthUI();
                 showNotification('アカウントを作成しました！', 'success');
+                
+                // Open question modal if user was trying to post a question
+                if (pendingQuestionPost) {
+                    pendingQuestionPost = false;
+                    setTimeout(() => {
+                        openNewQuestionModal();
+                    }, 500);
+                }
             } catch (error) {
                 console.error('Register error:', error);
                 showNotification('アカウント作成に失敗しました。', 'error');
