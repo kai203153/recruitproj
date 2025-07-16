@@ -4,8 +4,8 @@
   "description": "Japanese job transition Q&A forum prototype",
   "main": "index.html",
   "scripts": {
-    "dev": "http-server -p 8000 -o",
-    "start": "http-server -p 8000",
+    "dev": "http-server -p 8002 -o",
+    "start": "http-server -p 8002",
     "build": "echo 'No build process needed for static site'"
   },
   "keywords": ["job-transition", "qa-forum", "japanese"],
