@@ -141,6 +141,7 @@
                 tags: ["リクルート", "面接", "圧迫面接", "面接対策", "キャリア"],
                 views: 298,
                 likes: 42,
+                infoSource: "過去の志願者からの面接フィードバックとエージェント会話ログ",
             },
             {
                 id: 5,
@@ -166,6 +167,7 @@
                 tags: ["リクルート", "働き方", "残業", "ワークライフバランス", "WLB"],
                 views: 421,
                 likes: 58,
+                infoSource: "現役社員の匿名インタビューとエージェント会話ログ",
             },
             {
                 id: 6,
@@ -192,6 +194,7 @@
                 tags: ["リクルート", "給与", "年収", "評価制度", "ミッショングレード"],
                 views: 589,
                 likes: 72,
+                infoSource: "RAが保有する社内制度資料と転職成功者の体験談",
             },
             {
                 id: 7,
@@ -217,6 +220,7 @@
                 tags: ["リクルート", "キャリアパス", "社内異動", "ミッショングラブ", "キャリアチェンジ"],
                 views: 350,
                 likes: 41,
+                infoSource: "エージェントの企業訪問記録と社内制度資料",
             },
             {
                 id: 4,
@@ -243,6 +247,7 @@
                 tags: ["リクルート", "社風", "体育会系", "文化", "飲み会"],
                 views: 312,
                 likes: 45,
+                infoSource: "現役・元社員の匿名インタビューとエージェント会話ログ",
             },
             {
                 id: 1,
@@ -276,6 +281,7 @@
                 tags: ["リクルート", "パーソル", "裁量権", "成長環境", "若手"],
                 views: 128,
                 likes: 15,
+                infoSource: "エージェントの企業比較データと転職成功者の体験談",
             }
         ];
 
@@ -630,7 +636,7 @@
                         </div>
                     `;
                     confidence = '高';
-                    reliability = '公開情報と社員の声に基づく';
+                    reliability = '現役社員・元社員の匿名インタビューとエージェント会話ログに基づく';
                 } else if (lowerQuestion.includes('給与') || lowerQuestion.includes('年収') || lowerQuestion.includes('ミッショングレード')) {
                     response = `
                         <p class="mb-4">リクルートの給与体系についてのご質問ですね。</p>
@@ -646,7 +652,7 @@
                         </div>
                     `;
                     confidence = '中';
-                    reliability = '制度の概要は公開情報に基づくが、具体的な金額は非公開';
+                    reliability = 'RAが保有する社内制度資料と転職成功者の体験談に基づく';
                 } else {
                     response = `
                         <p class="mb-4">リクルートについてのご質問ですね。</p>
@@ -662,7 +668,7 @@
                         </div>
                     `;
                     confidence = '高';
-                    reliability = '公開企業情報に基づく';
+                    reliability = 'エージェントの企業訪問記録と転職成功者のフィードバックに基づく';
                 }
             } else if (lowerQuestion.includes('リクルート') && lowerQuestion.includes('パーソル')) {
                 response = `
@@ -678,7 +684,7 @@
                     </div>
                 `;
                 confidence = '中';
-                reliability = '業界の一般的な傾向に基づく（具体的な企業名は不明）';
+                reliability = 'エージェントの企業比較データと転職成功者の体験談に基づく';
             } else {
                 response = `
                     <p class="mb-4">ご質問ありがとうございます。</p>
