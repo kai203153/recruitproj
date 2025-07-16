@@ -351,6 +351,14 @@
             const form = document.getElementById('new-question-form');
             form.addEventListener('submit', submitNewQuestion);
             
+            // Clear any existing form data
+            setTimeout(() => {
+                const titleInput = document.getElementById('question-title');
+                const detailInput = document.getElementById('question-detail');
+                if (titleInput) titleInput.value = '';
+                if (detailInput) detailInput.value = '';
+            }, 50);
+            
             modal.classList.remove('hidden');
             setTimeout(() => {
                 modal.classList.add('opacity-100');
@@ -410,6 +418,10 @@
             
             // Re-render feed
             renderFeed(knowledgeBase);
+            
+            // Clear the form
+            document.getElementById('question-title').value = '';
+            document.getElementById('question-detail').value = '';
             
             // Close modal
             closeModal();
