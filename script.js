@@ -21,7 +21,7 @@ const knowledgeBase = [
             </div>
             <p class="mt-4 text-sm text-gray-600">「自分はどう働きたいか」という意思を尊重してくれる文化なので、面接で希望の働き方を率直に伝えてみるのが良いでしょう。</p>
             <div class="mt-4 p-3 bg-gray-50 rounded-lg border-l-4 border-blue-500">
-                <p class="text-xs text-gray-600"><strong>情報源:</strong> 2024年時点のリクルート公式情報、現役社員へのヒアリング、企業の働き方改革レポート</p>
+                <p class="text-xs text-gray-600"><strong>情報源:</strong> 2024年</p>
             </div>
         `,
         tags: ["リクルート", "働き方", "残業", "ワークライフバランス", "WLB"],
@@ -50,7 +50,7 @@ const knowledgeBase = [
             </div>
             <p class="mt-4 text-sm text-gray-600">年功序列ではなく、常に挑戦し続ける人に報いるための制度と言えます。安定よりも変化や成長を求める方にはフィットしやすいでしょう。</p>
             <div class="mt-4 p-3 bg-gray-50 rounded-lg border-l-4 border-blue-500">
-                <p class="text-xs text-gray-600"><strong>情報源:</strong> リクルート公式採用サイト、人事制度公開資料、現役社員へのインタビュー（2024年）</p>
+                <p class="text-xs text-gray-600"><strong>情報源:</strong> 2024年</p>
             </div>
         `,
         tags: ["リクルート", "給与", "年収", "評価制度", "ミッショングレード"],
@@ -78,7 +78,7 @@ const knowledgeBase = [
             </div>
             <p class="mt-4 text-sm text-gray-600">「自分のキャリアは自分で決める」という意思が強い人にとっては、社内にいながら多様な経験を積める、非常に魅力的な制度です。</p>
             <div class="mt-4 p-3 bg-gray-50 rounded-lg border-l-4 border-blue-500">
-                <p class="text-xs text-gray-600"><strong>情報源:</strong> リクルート社内制度資料、キャリア開発に関する社員アンケート結果（2023年）、転職サイトでの企業口コミ</p>
+                <p class="text-xs text-gray-600"><strong>情報源:</strong> 2023-2024年</p>
             </div>
         `,
         tags: ["リクルート", "キャリアパス", "社内異動", "ミッショングラブ", "キャリアチェンジ"],
@@ -107,7 +107,7 @@ const knowledgeBase = [
             </div>
             <p class="mt-4 text-sm text-gray-600">結論として、エネルギッシュな環境で目標達成にコミットしたい方には非常にフィットする文化ですが、いわゆる「体育会系のノリ」が苦手な方でも、ロジカルさや個人の意思が尊重されるため、活躍できる土壌は十分にあります。</p>
             <div class="mt-4 p-3 bg-gray-50 rounded-lg border-l-4 border-blue-500">
-                <p class="text-xs text-gray-600"><strong>情報源:</strong> リクルート企業文化資料、社員満足度調査（2024年）、転職サイトでの企業評価、現役社員へのインタビュー</p>
+                <p class="text-xs text-gray-600"><strong>情報源:</strong> 2024年</p>
             </div>
         `,
         tags: ["リクルート", "社風", "体育会系", "文化", "飲み会"],
@@ -143,7 +143,7 @@ const knowledgeBase = [
             </div>
             <p class="mt-4 text-sm text-gray-600">※上記は多数のヒアリングに基づく傾向であり、部署やチームによって異なる場合があります。</p>
             <div class="mt-4 p-3 bg-gray-50 rounded-lg border-l-4 border-blue-500">
-                <p class="text-xs text-gray-600"><strong>情報源:</strong> 転職サイトでの企業口コミ（2023-2024年）、元社員へのインタビュー、企業の採用情報・育成制度資料</p>
+                <p class="text-xs text-gray-600"><strong>情報源:</strong> 2023-2024年</p>
             </div>
         `,
         tags: ["A社", "B社", "裁量権", "成長環境", "若手"],
