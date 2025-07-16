@@ -102,6 +102,47 @@
         // --- Simulated Knowledge Base ---
         const knowledgeBase = [
             {
+                id: 8,
+                questioner: {
+                    age: "20代後半",
+                    industry: "IT・通信",
+                    job: "エンジニア",
+                },
+                question: "リクルートの面接って圧迫面接ですか？",
+                answer: `
+                    <p class="mb-4">面接の雰囲気についてのご質問ですね。多くの候補者様が気にされるポイントです。</p>
+                    <p class="mb-3"><strong>【結論】</strong><br>過去の志願者からの面接フィードバックによると、圧迫面接というよりかは、自分のことを言語化できているのか、過去の自分を自己分析できているのかを深掘りできるかを重要視されています。</p>
+                    <div class="p-4 bg-blue-50 rounded-lg mb-4">
+                        <h4 class="font-bold text-blue-800">面接の特徴</h4>
+                        <ul class="list-disc list-inside mt-2 text-sm space-y-2">
+                            <li><strong>深掘り重視:</strong> 表面的な回答ではなく、「なぜそう思ったのか」「どのような経験から学んだのか」を徹底的に聞かれます。これは圧迫ではなく、本当に理解したいという姿勢です。</li>
+                            <li><strong>自己分析力の確認:</strong> 過去の経験を振り返り、そこから何を学び、どう成長したかを言語化できるかが重要です。曖昧な回答は避け、具体的なエピソードと学びを準備しておくことが大切です。</li>
+                            <li><strong>論理的思考の確認:</strong> 感情的な回答ではなく、ロジカルに自分の考えを整理して伝えられるかが評価されます。</li>
+                        </ul>
+                    </div>
+                    <div class="p-4 bg-green-50 rounded-lg mb-4">
+                        <h4 class="font-bold text-green-800">面接官の意図</h4>
+                        <ul class="list-disc list-inside mt-2 text-sm space-y-2">
+                            <li><strong>キャリアの一貫性:</strong> なぜリクルートを選んだのか、どのようなキャリアを描いているのかの整合性を確認したい</li>
+                            <li><strong>成長意欲:</strong> 過去の経験から学びを得て、それを次に活かそうとする姿勢があるか</li>
+                            <li><strong>コミュニケーション能力:</strong> 複雑な考えを分かりやすく伝えられるか、チームで働く上で必要なスキル</li>
+                        </ul>
+                    </div>
+                    <div class="p-4 bg-yellow-50 rounded-lg mb-4">
+                        <h4 class="font-bold text-yellow-800">対策のポイント</h4>
+                        <ul class="list-disc list-inside mt-2 text-sm space-y-2">
+                            <li><strong>STAR法の活用:</strong> Situation（状況）、Task（課題）、Action（行動）、Result（結果）の順で具体的なエピソードを準備</li>
+                            <li><strong>自己分析の深化:</strong> なぜその選択をしたのか、何を学んだのか、次にどう活かすのかを明確に</li>
+                            <li><strong>リクルートへの理解:</strong> 企業理念や事業内容を深く理解し、なぜ自分がフィットするのかを具体的に説明できるように</li>
+                        </ul>
+                    </div>
+                    <p class="mt-4 text-sm text-gray-600">面接は「圧迫」ではなく「深掘り」の場と考え、自分の経験と価値観をしっかり言語化できるように準備することをお勧めします。</p>
+                `,
+                tags: ["リクルート", "面接", "圧迫面接", "面接対策", "キャリア"],
+                views: 298,
+                likes: 42,
+            },
+            {
                 id: 5,
                 questioner: {
                     age: "20代後半",
@@ -210,12 +251,12 @@
                     industry: "IT・通信",
                     job: "営業職",
                 },
-                question: "A社とB社、若手の裁量権と成長環境って、ぶっちゃけどう違いますか？",
+                question: "リクルートとパーソル、若手の裁量権と成長環境って、ぶっちゃけどう違いますか？",
                 answer: `
-                    <p class="mb-4">ご質問ありがとうございます。A社とB社の若手育成に関するリアルな情報ですね。多くの候補者様が気にされるポイントです。</p>
-                    <p class="mb-3"><strong>【結論】</strong><br>早くから挑戦したいならA社、じっくり育ててほしいならB社、というのが元社員や現役社員から聞くリアルな声です。</p>
+                    <p class="mb-4">ご質問ありがとうございます。リクルートとパーソルの若手育成に関するリアルな情報ですね。多くの候補者様が気にされるポイントです。</p>
+                    <p class="mb-3"><strong>【結論】</strong><br>早くから挑戦したいならリクルート、じっくり育ててほしいならパーソル、というのが元社員や現役社員から聞くリアルな声です。</p>
                     <div class="p-4 bg-blue-50 rounded-lg mb-4">
-                        <h4 class="font-bold text-blue-800">A社：実践で学ぶ！挑戦環境</h4>
+                        <h4 class="font-bold text-blue-800">リクルート：実践で学ぶ！挑戦環境</h4>
                         <ul class="list-disc list-inside mt-2 text-sm space-y-1">
                             <li>入社1年目からでも、手を挙げればプロジェクトの重要部分を任される。</li>
                             <li>「まずやってみろ」の文化。失敗から学ぶ姿勢が評価される。</li>
@@ -223,16 +264,16 @@
                         </ul>
                     </div>
                     <div class="p-4 bg-green-50 rounded-lg">
-                        <h4 class="font-bold text-green-800">B社：丁寧な育成！安心環境</h4>
+                        <h4 class="font-bold text-green-800">パーソル：丁寧な育成！安心環境</h4>
                         <ul class="list-disc list-inside mt-2 text-sm space-y-1">
                             <li>3年目頃まで手厚いOJTと研修制度が充実。</li>
                             <li>先輩がしっかりサポートしてくれるので、未経験分野でも安心。</li>
-                            <li><strong>注意点：</strong>独り立ちのスピードはA社に比べると緩やかです。</li>
+                            <li><strong>注意点：</strong>独り立ちのスピードはリクルートに比べると緩やかです。</li>
                         </ul>
                     </div>
                     <p class="mt-4 text-sm text-gray-600">※上記は多数のヒアリングに基づく傾向であり、部署やチームによって異なる場合があります。</p>
                 `,
-                tags: ["A社", "B社", "裁量権", "成長環境", "若手"],
+                tags: ["リクルート", "パーソル", "裁量権", "成長環境", "若手"],
                 views: 128,
                 likes: 15,
             }
@@ -335,7 +376,7 @@
                 <form id="new-question-form" class="space-y-4">
                     <div>
                         <label for="question-title" class="block text-sm font-medium text-gray-700 mb-1">質問（タイトル）</label>
-                        <input type="text" id="question-title" class="w-full p-2 border border-gray-300 rounded-md" placeholder="例：A社の残業時間の実態について" required>
+                        <input type="text" id="question-title" class="w-full p-2 border border-gray-300 rounded-md" placeholder="例：リクルートの残業時間の実態について" required>
                     </div>
                     <div>
                         <label for="question-detail" class="block text-sm font-medium text-gray-700 mb-1">質問の詳細（任意）</label>
@@ -551,7 +592,30 @@
             let reliability = '';
             
             if (lowerQuestion.includes('リクルート') || lowerQuestion.includes('recruit')) {
-                if (lowerQuestion.includes('働き方') || lowerQuestion.includes('残業') || lowerQuestion.includes('wlb')) {
+                if (lowerQuestion.includes('面接') || lowerQuestion.includes('圧迫')) {
+                    response = `
+                        <p class="mb-4">リクルートの面接についてのご質問ですね。</p>
+                        <p class="mb-3"><strong>【AI回答】</strong><br>過去の志願者からの面接フィードバックによると、圧迫面接というよりかは、自分のことを言語化できているのか、過去の自分を自己分析できているのかを深掘りできるかを重要視されています。</p>
+                        <div class="p-4 bg-blue-50 rounded-lg mb-4">
+                            <h4 class="font-bold text-blue-800">面接の特徴</h4>
+                            <ul class="list-disc list-inside mt-2 text-sm space-y-1">
+                                <li>深掘り重視：表面的な回答ではなく、なぜそう思ったのかを徹底的に聞かれる</li>
+                                <li>自己分析力の確認：過去の経験から何を学んだかを言語化できるかが重要</li>
+                                <li>論理的思考の確認：ロジカルに自分の考えを整理して伝えられるかが評価される</li>
+                            </ul>
+                        </div>
+                        <div class="p-4 bg-green-50 rounded-lg mb-4">
+                            <h4 class="font-bold text-green-800">対策のポイント</h4>
+                            <ul class="list-disc list-inside mt-2 text-sm space-y-1">
+                                <li>STAR法の活用：具体的なエピソードを準備</li>
+                                <li>自己分析の深化：なぜその選択をしたのかを明確に</li>
+                                <li>リクルートへの理解：企業理念を深く理解し、なぜ自分がフィットするのかを説明</li>
+                            </ul>
+                        </div>
+                    `;
+                    confidence = '高';
+                    reliability = '過去の志願者からの面接フィードバックに基づく';
+                } else if (lowerQuestion.includes('働き方') || lowerQuestion.includes('残業') || lowerQuestion.includes('wlb')) {
                     response = `
                         <p class="mb-4">リクルートの働き方についてのご質問ですね。</p>
                         <p class="mb-3"><strong>【AI回答】</strong><br>リクルートは「スマートワーク」を推進しており、全社的に働き方改革に取り組んでいます。月平均残業時間は20〜30時間程度の部署が多いとされています。</p>
@@ -600,15 +664,15 @@
                     confidence = '高';
                     reliability = '公開企業情報に基づく';
                 }
-            } else if (lowerQuestion.includes('a社') && lowerQuestion.includes('b社')) {
+            } else if (lowerQuestion.includes('リクルート') && lowerQuestion.includes('パーソル')) {
                 response = `
-                    <p class="mb-4">A社とB社の比較についてのご質問ですね。</p>
-                    <p class="mb-3"><strong>【AI回答】</strong><br>一般的に、A社は若手に早くから挑戦機会を与える「実践型」、B社は丁寧な育成を重視する「教育型」の傾向があります。ただし、これは一般的な傾向であり、実際は部署やチームによって大きく異なる可能性があります。</p>
+                    <p class="mb-4">リクルートとパーソルの比較についてのご質問ですね。</p>
+                    <p class="mb-3"><strong>【AI回答】</strong><br>一般的に、リクルートは若手に早くから挑戦機会を与える「実践型」、パーソルは丁寧な育成を重視する「教育型」の傾向があります。ただし、これは一般的な傾向であり、実際は部署やチームによって大きく異なる可能性があります。</p>
                     <div class="p-4 bg-purple-50 rounded-lg mb-4">
                         <h4 class="font-bold text-purple-800">一般的な比較</h4>
                         <ul class="list-disc list-inside mt-2 text-sm space-y-1">
-                            <li><strong>A社:</strong> 早期からの裁量権、失敗を許容する文化</li>
-                            <li><strong>B社:</strong> 手厚いOJT、段階的な成長支援</li>
+                            <li><strong>リクルート:</strong> 早期からの裁量権、失敗を許容する文化</li>
+                            <li><strong>パーソル:</strong> 手厚いOJT、段階的な成長支援</li>
                             <li>どちらも一長一短があり、個人の志向性が重要</li>
                         </ul>
                     </div>
