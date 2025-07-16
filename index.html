@@ -605,14 +605,17 @@
         // Load questions from Firestore
         const loadQuestionsFromFirestore = async () => {
             try {
+                console.log('Attempting to load questions from Firestore...');
                 const q = query(collection(db, "questions"), orderBy("timestamp", "desc"));
                 
                 // Set up real-time listener
                 onSnapshot(q, (querySnapshot) => {
+                    console.log('Firestore snapshot received:', querySnapshot.size, 'documents');
                     const firestoreQuestions = [];
                     
                     querySnapshot.forEach((doc) => {
                         const data = doc.data();
+                        console.log('Document data:', doc.id, data);
                         firestoreQuestions.push({
                             id: doc.id,
                             questioner: data.questioner || { age: "匿名", industry: "匿名", job: "匿名" },
@@ -631,6 +634,9 @@
                     const allQuestions = [...firestoreQuestions, ...knowledgeBase];
                     renderFeed(allQuestions);
                     console.log('Real-time update: Loaded questions from Firestore:', firestoreQuestions.length);
+                }, (error) => {
+                    console.error("Firestore listener error: ", error);
+                    renderFeed(knowledgeBase);
                 });
                 
             } catch (error) {
@@ -642,6 +648,7 @@
         // Save new question to Firestore
         const saveQuestionToFirestore = async (questionData) => {
             try {
+                console.log('Attempting to save question to Firestore:', questionData);
                 const docRef = await addDoc(collection(db, "questions"), {
                     questioner: questionData.questioner,
                     question: questionData.question,
@@ -657,19 +664,26 @@
                 return docRef.id;
             } catch (error) {
                 console.error("Error saving question: ", error);
+                console.error("Error details:", error.message, error.code);
                 return null;
             }
         };
         
         // --- Initial Render ---
         // Wait for Firebase to initialize, then load questions
-        setTimeout(() => {
+        const initializeApp = () => {
             if (window.db) {
+                console.log('Firebase initialized, loading questions...');
                 loadQuestionsFromFirestore();
             } else {
+                console.log('Firebase not available, using static data...');
                 renderFeed(knowledgeBase);
             }
-        }, 1000);
+        };
+        
+        // Try to initialize immediately, then retry after a delay
+        initializeApp();
+        setTimeout(initializeApp, 2000);
     </script>
 
 </body>
