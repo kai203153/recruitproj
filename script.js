@@ -240,16 +240,56 @@ const openModal = (item) => {
     }, 10);
 };
 
+// 類似質問を検索する関数
+function findSimilarQuestions(inputText) {
+    if (!inputText || inputText.length < 2) return [];
+    const inputLower = inputText.toLowerCase();
+    const keywords = inputLower.split(/\s+/).filter(w => w.length > 1);
+    return knowledgeBase
+        .map(item => {
+            const q = item.question.toLowerCase();
+            let score = 0;
+            keywords.forEach(k => { if (q.includes(k)) score += 1; });
+            return { ...item, score };
+        })
+        .filter(item => item.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 3);
+}
+
+// サジェストUIを表示する関数
+function showSuggestions(suggestions) {
+    const container = document.getElementById('suggestions-container');
+    if (!container) return;
+    if (suggestions.length === 0) {
+        container.innerHTML = '';
+        container.classList.add('hidden');
+        return;
+    }
+    container.innerHTML = suggestions.map(item =>
+        `<div class="suggestion-item cursor-pointer px-3 py-2 border-b border-gray-100 hover:bg-gray-50" onclick='window.__openModalFromSuggest(${item.id})'>
+          <span class="text-sm text-gray-800">${item.question}</span>
+        </div>`
+    ).join('');
+    container.classList.remove('hidden');
+}
+
+// --- openModalをグローバル参照できるように ---
+window.__openModalFromSuggest = function(id) {
+    const item = knowledgeBase.find(q => q.id === id);
+    if (item) openModal(item);
+};
+
 // 新規質問モーダルを開く（シミュレーション）
 const openNewQuestionModal = () => {
      modalBody.innerHTML = `
         <h2 class="text-2xl font-bold mb-4 text-gray-900">新しい質問を投稿する</h2>
         <p class="text-sm text-gray-600 mb-6">ご質問は匿名で公開され、他の転職活動中の方の参考になります。個人が特定できる情報は含めないようご注意ください。</p>
-        
         <div class="space-y-4">
-            <div>
+            <div class="relative">
                 <label for="question-title" class="block text-sm font-medium text-gray-700 mb-1">質問（タイトル）</label>
                 <input type="text" id="question-title" class="w-full p-2 border border-gray-300 rounded-md" placeholder="例：A社の残業時間の実態について">
+                <div id="suggestions-container" class="absolute left-0 right-0 bg-white z-10 hidden border border-gray-200 rounded-b-lg shadow-lg"></div>
             </div>
             <div>
                 <label for="question-detail" class="block text-sm font-medium text-gray-700 mb-1">質問の詳細（任意）</label>
@@ -265,6 +305,25 @@ const openNewQuestionModal = () => {
         modal.classList.add('opacity-100');
         modalContent.classList.remove('opacity-0', 'scale-95');
         modalContent.classList.add('opacity-100', 'scale-100');
+        // --- サジェスト機能のイベントリスナー追加 ---
+        const titleInput = document.getElementById('question-title');
+        const detailInput = document.getElementById('question-detail');
+        const suggestionsContainer = document.getElementById('suggestions-container');
+        let debounceTimer;
+        const updateSuggestions = () => {
+            const title = titleInput.value;
+            const detail = detailInput.value;
+            const suggestions = findSimilarQuestions(title + ' ' + detail);
+            showSuggestions(suggestions);
+        };
+        titleInput.addEventListener('input', updateSuggestions);
+        detailInput.addEventListener('input', updateSuggestions);
+        // サジェスト外クリックで非表示
+        document.addEventListener('click', function hideSuggest(e) {
+            if (!suggestionsContainer.contains(e.target) && e.target !== titleInput && e.target !== detailInput) {
+                suggestionsContainer.classList.add('hidden');
+            }
+        });
     }, 10);
 }
 
