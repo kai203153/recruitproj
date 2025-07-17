@@ -313,22 +313,26 @@ const openNewQuestionModal = () => {
         const titleInput = document.getElementById('question-title');
         const detailInput = document.getElementById('question-detail');
         const suggestionsContainer = document.getElementById('suggestions-container');
-        let debounceTimer;
+        // サジェスト更新関数
         const updateSuggestions = () => {
             const title = titleInput.value;
             const detail = detailInput.value;
             const suggestions = findSimilarQuestions(title + ' ' + detail);
-            console.log('サジェスト候補:', suggestions);
             showSuggestions(suggestions);
         };
+        // 入力イベント
         titleInput.addEventListener('input', updateSuggestions);
         detailInput.addEventListener('input', updateSuggestions);
-        // サジェスト外クリックで非表示
-        document.addEventListener('click', function hideSuggest(e) {
+        // サジェスト外クリックで非表示（重複防止のため一度removeしてからadd）
+        if (window._hideSuggestHandler) document.removeEventListener('click', window._hideSuggestHandler);
+        window._hideSuggestHandler = function(e) {
             if (!suggestionsContainer.contains(e.target) && e.target !== titleInput && e.target !== detailInput) {
                 suggestionsContainer.classList.add('hidden');
             }
-        });
+        };
+        document.addEventListener('click', window._hideSuggestHandler);
+        // 初期サジェスト表示
+        updateSuggestions();
     }, 10);
 }
 
