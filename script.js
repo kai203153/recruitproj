@@ -242,19 +242,23 @@ const openModal = (item) => {
 
 // 類似質問を検索する関数
 function findSimilarQuestions(inputText) {
-    if (!inputText || inputText.length < 2) return [];
+    if (!inputText || inputText.length < 1) return [];
     const inputLower = inputText.toLowerCase();
-    const keywords = inputLower.split(/\s+/).filter(w => w.length > 1);
+    const keywords = inputLower.split(/\s+/).filter(w => w.length > 0);
     return knowledgeBase
         .map(item => {
-            const q = item.question.toLowerCase();
+            const questionLower = item.question.toLowerCase();
+            const tagsLower = (item.tags || []).join(' ').toLowerCase();
             let score = 0;
-            keywords.forEach(k => { if (q.includes(k)) score += 1; });
+            keywords.forEach(k => {
+                if (questionLower.includes(k)) score += 3;
+                if (tagsLower.includes(k)) score += 2;
+            });
             return { ...item, score };
         })
         .filter(item => item.score > 0)
         .sort((a, b) => b.score - a.score)
-        .slice(0, 3);
+        .slice(0, 5);
 }
 
 // サジェストUIを表示する関数
@@ -262,8 +266,8 @@ function showSuggestions(suggestions) {
     const container = document.getElementById('suggestions-container');
     if (!container) return;
     if (suggestions.length === 0) {
-        container.innerHTML = '';
-        container.classList.add('hidden');
+        container.innerHTML = '<div class="px-3 py-2 text-gray-400 text-sm">該当する類似質問はありません</div>';
+        container.classList.remove('hidden');
         return;
     }
     container.innerHTML = suggestions.map(item =>
@@ -314,6 +318,7 @@ const openNewQuestionModal = () => {
             const title = titleInput.value;
             const detail = detailInput.value;
             const suggestions = findSimilarQuestions(title + ' ' + detail);
+            console.log('サジェスト候補:', suggestions);
             showSuggestions(suggestions);
         };
         titleInput.addEventListener('input', updateSuggestions);
